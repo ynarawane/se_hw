@@ -11,11 +11,15 @@ class MoviesController < ApplicationController
   end
 
   def index
-    @sorting = params[:sort];
-    if(@sorting == nil)
-      @movies = Movie.all
-    else
-      @movies = Movie.order(@sorting)
+    @sorting = params[:sort]
+    @all_ratings = Movie.distinct.pluck(:rating)
+    @ticked_ratings = params[:ratings]
+    if @ticked_ratings == nil
+      @ticked_ratings = Hash.new
+    end
+    if @ticked_ratings
+      @set_ratings = @ticked_ratings.keys
+      @movies = Movie.where(:rating => @set_ratings).order(@sorting)
     end
   end
 
