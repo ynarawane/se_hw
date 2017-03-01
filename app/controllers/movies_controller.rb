@@ -15,13 +15,17 @@ class MoviesController < ApplicationController
     redirect = false
     @all_ratings = Movie.distinct.pluck(:rating)
     
+    if params[:commit] == "Refresh"
+      session.clear
+    end
+    
     if params[:sort]
       @sorting = params[:sort]
       session[:sort] = params[:sort]
-    elsif session[:sort]
+      elsif session[:sort]
       @sorting = session[:sort]
       redirect = true
-    else
+      else
       @sorting = nil
     end
     
