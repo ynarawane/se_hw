@@ -11,18 +11,47 @@ class MoviesController < ApplicationController
   end
 
   def index
-    @sorting = params[:sort]
+    
+    redirect = false
     @all_ratings = Movie.distinct.pluck(:rating)
-    @ticked_ratings = params[:ratings]
-    if @ticked_ratings == nil
-      @ticked_ratings = Hash.new
+    
+    if params[:sort]
+      @sorting = params[:sort]
+      session[:sort] = params[:sort]
+    elsif session[:sort]
+      @sorting = session[:sort]
+      redirect = true
+    else
+      @sorting = nil
     end
-    if @ticked_ratings
-      @set_ratings = @ticked_ratings.keys
-      @movies = Movie.where(:rating => @set_ratings).order(@sorting)
+    
+    if params[:commit] == "Refresh" and params[:ratings].nil?
+      @ticked_ratings = nil
+      session[:ratings] = nil
+      elsif params[:ratings]
+      session[:ratings] = params[:ratings]
+      @ticked_ratings = params[:ratings]
+      elsif session[:ratings]
+      @ticked_ratings = session[:ratings]
+      redirect = true
+      else
+      @ticked_ratings = nil
     end
+  
+  if redirect
+    flash.keep
+    redirect_to movies_path :sort=>@sorting, :ratings=>@ticked_ratings
   end
-
+  
+  if @ticked_ratings.nil?
+    @ticked_ratings = Hash.new
+  end
+  
+  @set_ratings = @ticked_ratings.keys
+  
+  @movies = Movie.where(:rating => @set_ratings).order(@sorting)
+  end
+  
   def new
     # default: render 'new' template
   end
